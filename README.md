@@ -21,7 +21,7 @@ Sistema de punto de venta (POS) para pequeños comercios, construido con .NET 10
 
 ### Si el puerto 1433 está ocupado
 
-Cambia `MSSQL_PORT` en `.env` (por ejemplo `14330`) y vuelve a ejecutar `docker compose up -d`. Cuando la API tenga su cadena de conexión (FND-04), deberá usar ese mismo puerto.
+Cambia `MSSQL_PORT` en `.env` (por ejemplo `14330`), vuelve a ejecutar `docker compose up -d` y usa ese mismo puerto en la cadena de conexión de la API (ver "Secretos en desarrollo").
 
 ### Apagar el entorno
 
@@ -41,10 +41,12 @@ La API valida su configuración al arrancar: si falta un valor obligatorio, no i
 ### Secretos en desarrollo
 
 ```
-dotnet user-secrets set "Database:ConnectionString" "Server=localhost,1433;Database=PatriSystem;User Id=sa;Password=<tu-contraseña>;TrustServerCertificate=True" --project src/PatriSystem.Api
+dotnet user-secrets set "Database:ConnectionString" "Server=localhost,1433;Database=master;User Id=sa;Password=<tu-contraseña>;TrustServerCertificate=True" --project src/PatriSystem.Api
 ```
 
 Usa la misma contraseña y el mismo puerto que definiste en `.env`.
+
+> Mientras la API no tenga EF Core se usa la base `master`, que siempre existe. En el ticket de identidad (AUTH-01) pasará a `PatriSystem`. No crees tablas en `master`.
 
 ### Equivalencia con variables de entorno
 
@@ -53,3 +55,12 @@ En producción y en CI los valores se pasan como variables de entorno. El separa
 | Configuración | Variable de entorno |
 |---|---|
 | `Database:ConnectionString` | `Database__ConnectionString` |
+
+## Estado de la API (health checks)
+
+| Endpoint | Qué responde | Comprueba |
+|---|---|---|
+| `GET /health/live` | `200 Healthy` si el proceso está vivo | Nada externo |
+| `GET /health/ready` | `200 Healthy` si puede atender, `503 Unhealthy` si no | Conexión a SQL Server |
+
+Cada respuesta incluye el encabezado `X-Correlation-Id`, que también aparece en los logs de esa petición. Las respuestas de error nunca incluyen detalles internos fuera de Development.
