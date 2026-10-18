@@ -75,3 +75,32 @@ Con la API en ejecución (`dotnet run --project src/PatriSystem.Api`), en Develo
 | `http://localhost:5062/openapi/v1.json` | Documento OpenAPI |
 
 La documentación no se publica fuera de Development. `GET /api/ping` es un endpoint de ejemplo que devuelve `{ "status": "ok" }`.
+
+## Pruebas
+
+Ejecuta todas las pruebas con:
+
+```
+dotnet test PatriSystem.slnx
+```
+
+| Proyecto | Tipo | Qué prueba |
+|---|---|---|
+| `PatriSystem.Application.Tests` | Unitarias | Casos de uso y reglas, sin base de datos ni servidor web |
+| `PatriSystem.Api.IntegrationTests` | Integración | La API completa en memoria, con `WebApplicationFactory` |
+
+Herramientas: xUnit, NSubstitute (dobles de prueba) y Shouldly (aserciones). No se usa FluentAssertions por su cambio a licencia de pago.
+
+### Convención de nombres
+
+Los nombres de las pruebas siguen el patrón `Method_Scenario_ExpectedResult`:
+
+```csharp
+AddApplication_EmptyServiceCollection_ReturnsSameCollection
+```
+
+Los guiones bajos son intencionales: la regla CA1707 está desactivada solo en `tests/`, en `tests/.editorconfig`.
+
+### Pruebas de integración
+
+Usan el entorno `Testing` y un valor falso de `Database:ConnectionString`, por lo que las pruebas actuales no necesitan Docker ni secretos locales.
