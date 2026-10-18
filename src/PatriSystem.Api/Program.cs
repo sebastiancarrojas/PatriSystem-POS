@@ -7,6 +7,8 @@ using PatriSystem.Api.Middleware;
 using PatriSystem.Application;
 using PatriSystem.Infrastructure;
 
+using Scalar.AspNetCore;
+
 using Serilog;
 using Serilog.Formatting.Compact;
 
@@ -47,6 +49,12 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+    app.MapScalarApiReference();
+}
 
 app.MapHealthChecks("/health/live", new HealthCheckOptions
 {

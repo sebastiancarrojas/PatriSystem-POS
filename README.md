@@ -64,3 +64,14 @@ En producción y en CI los valores se pasan como variables de entorno. El separa
 | `GET /health/ready` | `200 Healthy` si puede atender, `503 Unhealthy` si no | Conexión a SQL Server |
 
 Cada respuesta incluye el encabezado `X-Correlation-Id`, que también aparece en los logs de esa petición. Las respuestas de error nunca incluyen detalles internos fuera de Development.
+
+## Documentación de la API
+
+Con la API en ejecución (`dotnet run --project src/PatriSystem.Api`), en Development:
+
+| URL | Qué es |
+|---|---|
+| `http://localhost:5062/scalar` | Interfaz interactiva (Scalar) |
+| `http://localhost:5062/openapi/v1.json` | Documento OpenAPI |
+
+La documentación no se publica fuera de Development. `GET /api/ping` es un endpoint de ejemplo que devuelve `{ "status": "ok" }`.
