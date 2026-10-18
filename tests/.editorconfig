@@ -1,0 +1,4 @@
+[*.cs]
+# Convención de nombres de prueba: Method_Scenario_ExpectedResult.
+# Los guiones bajos son intencionales, por eso se desactiva CA1707 solo en tests/.
+dotnet_diagnostic.CA1707.severity = none
