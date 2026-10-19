@@ -2,6 +2,8 @@
 
 Sistema de punto de venta (POS) para pequeños comercios, construido con .NET 10 y Clean Architecture.
 
+[![CI](https://github.com/sebastiancarrojas/PatriSystem-POS/actions/workflows/ci.yml/badge.svg)](https://github.com/sebastiancarrojas/PatriSystem-POS/actions/workflows/ci.yml)
+
 ## Requisitos
 
 - SDK de .NET 10 (`dotnet --version` debe empezar con `10.`)
@@ -104,3 +106,13 @@ Los guiones bajos son intencionales: la regla CA1707 está desactivada solo en `
 ### Pruebas de integración
 
 Usan el entorno `Testing` y un valor falso de `Database:ConnectionString`, por lo que las pruebas actuales no necesitan Docker ni secretos locales.
+
+## Integración continua
+
+Cada PR y cada push a `main` ejecutan el workflow `CI` (`.github/workflows/ci.yml`): restauración con caché, revisión de formato, compilación en Release con advertencias como errores y pruebas con cobertura (el informe queda como artefacto de la ejecución). Para reproducirlo en local:
+
+```
+dotnet format PatriSystem.slnx --verify-no-changes
+dotnet build PatriSystem.slnx --configuration Release -warnaserror
+dotnet test PatriSystem.slnx --configuration Release --collect:"XPlat Code Coverage"
+```
