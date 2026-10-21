@@ -107,6 +107,22 @@ Los guiones bajos son intencionales: la regla CA1707 está desactivada solo en `
 
 Usan el entorno `Testing` y un valor falso de `Database:ConnectionString`, por lo que las pruebas actuales no necesitan Docker ni secretos locales.
 
+### Pruebas de arquitectura
+
+Viven en `tests/PatriSystem.Application.Tests/Architecture/` y hacen cumplir las reglas del ADR-001 en cada ejecución de `dotnet test`, incluido el CI:
+
+| Regla | Cómo se comprueba |
+|---|---|
+| Domain no referencia proyectos, paquetes ni frameworks | Lee su `.csproj` |
+| Application solo referencia Domain | Lee su `.csproj` |
+| Application solo usa los paquetes de una lista explícita | Lee su `.csproj` y la compara con `AllowedApplicationPackages` |
+| Domain y Application no usan EF Core, ASP.NET, Identity ni JWT | `.csproj` y tipos (NetArchTest) |
+| Las capas internas no usan las externas | Tipos (NetArchTest) |
+
+Si una capa necesita un paquete nuevo, se agrega a `AllowedApplicationPackages` en el mismo PR. Así cada excepción queda escrita y revisada.
+
+Las reglas sobre tipos todavía no comprueban nada, porque Domain y Application casi no tienen código. Empiezan a protegerse cuando llegue la identidad (AUTH-01).
+
 ## Integración continua
 
 Cada PR y cada push a `main` ejecutan el workflow `CI` (`.github/workflows/ci.yml`): restauración con caché, revisión de formato, compilación en Release con advertencias como errores y pruebas con cobertura (el informe queda como artefacto de la ejecución). Para reproducirlo en local:
