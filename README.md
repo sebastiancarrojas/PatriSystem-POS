@@ -14,14 +14,13 @@ Sistema de punto de venta (POS) para pequeños comercios, construido con .NET 10
 ## Cómo levantar el proyecto
 
 1. **Clona el repositorio** y entra en la carpeta.
-2. **Crea tu archivo `.env`** a partir de la plantilla:
+2. **Crea tu archivo `.env`** a partir de la plantilla. Cambia `MSSQL_SA_PASSWORD` por una contraseña propia (mínimo 8 caracteres, con mayúscula, minúscula, número y símbolo). El archivo `.env` no se sube al repositorio:
 
 ```
    copy .env.example .env      # Windows
    cp .env.example .env        # Linux y macOS
 ```
 
-   Cambia `MSSQL_SA_PASSWORD` por una contraseña propia (mínimo 8 caracteres, con mayúscula, minúscula, número y símbolo). El archivo `.env` no se sube al repositorio.
 3. **Levanta los servicios** y comprueba que SQL Server esté `healthy`:
 
 ```
