@@ -8,40 +8,50 @@ Sistema de punto de venta (POS) para pequeños comercios, construido con .NET 10
 
 ## Requisitos
 
-- SDK de .NET 10 (`dotnet --version` debe empezar con `10.`)
-- Docker Desktop
+- **Git**
+- **SDK de .NET 10, versión 10.0.204 o superior.** Comprueba con `dotnet --version`: una versión anterior no compila, porque `global.json` lo exige. Descarga en https://dotnet.microsoft.com/download/dotnet/10.0
+- **Docker Desktop.** En Windows necesita WSL 2 y la virtualización activada.
+- **Puertos libres:** 1433, 1025 y 8025.
+- **Memoria:** SQL Server necesita al menos 2 GB disponibles para Docker.
+- **Tiempo para la primera descarga:** la imagen de SQL Server es grande y puede tardar desde unos minutos hasta cerca de una hora según la conexión. Las siguientes veces ya está en caché.
 
 ## Cómo levantar el proyecto
 
-1. **Clona el repositorio** y entra en la carpeta.
+1. **Clona el repositorio** y entra en la carpeta:
+
+   ```
+   git clone https://github.com/sebastiancarrojas/PatriSystem-POS.git
+   cd PatriSystem-POS
+   ```
+
 2. **Crea tu archivo `.env`** a partir de la plantilla. Cambia `MSSQL_SA_PASSWORD` por una contraseña propia (mínimo 8 caracteres, con mayúscula, minúscula, número y símbolo). El archivo `.env` no se sube al repositorio:
 
-```
+   ```
    copy .env.example .env      # Windows
    cp .env.example .env        # Linux y macOS
-```
+   ```
 
-3. **Levanta los servicios** y comprueba que SQL Server esté `healthy`:
+3. **Levanta los servicios.** La primera vez descarga las imágenes, que es lo que más tarda. Espera a que SQL Server aparezca como `healthy`. Si `docker compose` dice que no puede conectar con el motor de Docker, abre Docker Desktop y espera a que indique *Engine running*:
 
-```
+   ```
    docker compose up -d
    docker compose ps
-```
+   ```
 
 4. **Guarda la cadena de conexión** en los secretos de usuario. Usa la misma contraseña y el mismo puerto que definiste en `.env`:
 
-```
+   ```
    dotnet user-secrets set "Database:ConnectionString" "Server=localhost,1433;Database=master;User Id=sa;Password=<tu-contraseña>;TrustServerCertificate=True" --project src/PatriSystem.Api
-```
+   ```
 
    > Mientras la API no use EF Core se usa la base `master`, que siempre existe. Cuando se agregue EF Core pasará a `PatriSystem`. No crees tablas en `master`.
 5. **Arranca la API:**
 
-```
+   ```
    dotnet run --project src/PatriSystem.Api
-```
+   ```
 
-6. **Comprueba que responde.** Abre `http://localhost:5062/health/ready` en el navegador: debe mostrar `Healthy`.
+6. **Comprueba que responde.** Abre `http://localhost:5062/health/ready` en el navegador: debe mostrar `Healthy`. En la consola verás un aviso `Failed to determine the https port for redirect`: es esperado por ahora, porque HTTPS todavía no está configurado, y no afecta.
 
 Para ejecutar las pruebas: `dotnet test PatriSystem.slnx`.
 
