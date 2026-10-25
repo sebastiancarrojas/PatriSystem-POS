@@ -178,3 +178,18 @@ Las dependencias apuntan siempre hacia adentro. El diagrama de capas está en [`
 ## Licencia
 
 [MIT](LICENSE)
+
+## Verificación
+
+El proyecto se levantó en un equipo limpio, siguiendo solo este README, el 22 de octubre de 2026.
+
+| Qué | Resultado |
+|---|---|
+| Sistema operativo | Windows 11 Pro |
+| SDK de .NET | 10.0.204 (versión más baja verificada) |
+| Descarga inicial de imágenes | unos 53 min con la conexión de la prueba (SQL Server: 627 MB de descarga y 2,35 GB en disco; MailHog: 146 MB y 572 MB) |
+| Resto del proceso, sin contar la descarga | entre 15 y 20 min (estimado, no cronometrado) |
+| `/health/ready` | `Healthy` |
+| `dotnet test` | 10 pruebas superadas |
+
+**Sin verificar a mano:** Linux y macOS (el CI compila y ejecuta las pruebas en Linux, pero los pasos de Docker y el comando `cp` no se probaron) y versiones del SDK anteriores a 10.0.204.
