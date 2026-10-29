@@ -41,17 +41,25 @@ Sistema de punto de venta (POS) para pequeños comercios, construido con .NET 10
 4. **Guarda la cadena de conexión** en los secretos de usuario. Usa la misma contraseña y el mismo puerto que definiste en `.env`:
 
    ```
-   dotnet user-secrets set "Database:ConnectionString" "Server=localhost,1433;Database=master;User Id=sa;Password=<tu-contraseña>;TrustServerCertificate=True" --project src/PatriSystem.Api
+   dotnet user-secrets set "Database:ConnectionString" "Server=localhost,1433;Database=PatriSystem;User Id=sa;Password=<tu-contraseña>;TrustServerCertificate=True" --project src/PatriSystem.Api
    ```
 
-   > Mientras la API no use EF Core se usa la base `master`, que siempre existe. Cuando se agregue EF Core pasará a `PatriSystem`. No crees tablas en `master`.
-5. **Arranca la API:**
+   > La base PatriSystem la crea el paso siguiente (migraciones). No uses la base master para nada del proyecto.
+
+5. **Crea la base de datos y las tablas** con las migraciones de EF Core. El comando crea la base `PatriSystem` si no existe. Hay que repetirlo cuando llegue una migración nueva:
+
+   ```
+   dotnet tool restore
+   dotnet ef database update --project src/PatriSystem.Infrastructure --startup-project src/PatriSystem.Api
+   ```
+
+6. **Arranca la API:**
 
    ```
    dotnet run --project src/PatriSystem.Api
    ```
 
-6. **Comprueba que responde.** Abre `http://localhost:5062/health/ready` en el navegador: debe mostrar `Healthy`. En la consola verás un aviso `Failed to determine the https port for redirect`: es esperado por ahora, porque HTTPS todavía no está configurado, y no afecta.
+7. **Comprueba que responde.** Abre `http://localhost:5062/health/ready` en el navegador: debe mostrar `Healthy`. En la consola verás un aviso `Failed to determine the https port for redirect`: es esperado por ahora, porque HTTPS todavía no está configurado, y no afecta.
 
 Para ejecutar las pruebas: `dotnet test PatriSystem.slnx`.
 
@@ -81,12 +89,14 @@ La API valida su configuración al arrancar: si falta un valor obligatorio, no i
 | `Database:ConnectionString` | Cadena de conexión a SQL Server | Sí | user-secrets (desarrollo) o variable de entorno |
 | `MSSQL_SA_PASSWORD` | Contraseña del usuario `sa` del contenedor de SQL Server | Sí | Archivo `.env` (lo lee Docker Compose) |
 | `MSSQL_PORT` | Puerto de SQL Server en tu máquina | No (por defecto `1433`) | Archivo `.env` |
+| `Identity:SeedOnStartup` | Crea los roles Admin y Cajero al arrancar, si no existen | No (por defecto `true`) | `appsettings` o variable de entorno |
 
 En producción y en CI los valores se pasan como variables de entorno. El separador `:` se escribe con doble guion bajo:
 
 | Configuración | Variable de entorno |
 |---|---|
 | `Database:ConnectionString` | `Database__ConnectionString` |
+| `Identity:SeedOnStartup` | `Identity__SeedOnStartup` |
 
 ## Estado de la API (health checks)
 
@@ -121,7 +131,7 @@ dotnet test PatriSystem.slnx
 
 Herramientas: xUnit, NSubstitute (dobles de prueba), Shouldly (aserciones) y NetArchTest (arquitectura). No se usa FluentAssertions por su cambio a licencia de pago.
 
-Los nombres de las pruebas siguen el patrón `Method_Scenario_ExpectedResult`. Las pruebas de integración usan el entorno `Testing` y un valor falso de `Database:ConnectionString`, por lo que las pruebas actuales no necesitan Docker ni secretos locales.
+Los nombres de las pruebas siguen el patrón `Method_Scenario_ExpectedResult`. Las pruebas de integración usan el entorno `Testing`, un valor falso de `Database:ConnectionString` y desactivan la siembra de roles con `Identity:SeedOnStartup=false`, por lo que las pruebas actuales no necesitan Docker ni secretos locales.
 
 Las pruebas de arquitectura están en `tests/PatriSystem.Application.Tests/Architecture/` y hacen cumplir las reglas del [ADR-001](docs/adr/0001-clean-architecture.md): Domain no depende de nada, Application solo de Domain y de una lista explícita de paquetes, y ninguna de las dos usa EF Core, ASP.NET, Identity ni JWT. Si una capa necesita un paquete nuevo, se agrega a `AllowedApplicationPackages` en el mismo PR. Las reglas sobre tipos todavía no comprueban nada, porque Domain y Application casi no tienen código.
 
@@ -181,7 +191,7 @@ Las dependencias apuntan siempre hacia adentro. El diagrama de capas está en [`
 
 ## Verificación
 
-El proyecto se levantó en un equipo limpio, siguiendo solo este README, el 22 de octubre de 2026.
+El proyecto se levantó en un equipo limpio, siguiendo solo este README, el 22 de octubre de 2026. **Esa prueba corresponde al estado anterior a AUTH-01**, cuando todavía no había migraciones ni base `PatriSystem`.
 
 | Qué | Resultado |
 |---|---|
@@ -193,3 +203,5 @@ El proyecto se levantó en un equipo limpio, siguiendo solo este README, el 22 d
 | `dotnet test` | 10 pruebas superadas |
 
 **Sin verificar a mano:** Linux y macOS (el CI compila y ejecuta las pruebas en Linux, pero los pasos de Docker y el comando `cp` no se probaron) y versiones del SDK anteriores a 10.0.204.
+
+**Pendiente:** repetir la verificación en un equipo limpio con el flujo actual, que incluye el paso 5 (migraciones). Con AUTH-01 solo se comprobó en la máquina de desarrollo: migración aplicada, dos arranques de la API con los roles creados una sola vez y 16 pruebas superadas.

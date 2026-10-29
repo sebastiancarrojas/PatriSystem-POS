@@ -9,5 +9,6 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
     {
         builder.UseEnvironment("Testing");
         builder.UseSetting("Database:ConnectionString", "Server=ejemplo");
+        builder.UseSetting("Identity:SeedOnStartup", "false");
     }
 }
