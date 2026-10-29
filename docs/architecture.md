@@ -34,8 +34,61 @@ Las flechas punteadas son los proyectos de pruebas.
 |---|---|---|
 | Domain | Nada | Entidades y reglas puras |
 | Application | `DependencyInjection` | Casos de uso, interfaces y validadores |
-| Infrastructure | `DatabaseOptions` y `DatabaseHealthCheck` | EF Core, Identity, JWT y correo |
+| Infrastructure | `DatabaseOptions`, `DatabaseHealthCheck`, `ApplicationDbContext`, Identity (`ApplicationUser`, `ApplicationRole`), `RefreshToken` y siembra de roles | JWT y correo |
 | Api | Controlador de ejemplo (`ping`), middleware de correlación y de errores, documentación OpenAPI | Controladores de cada caso de uso |
+
+## Modelo de datos
+
+Tablas que crea la migración `InitialIdentity`. Las siete tablas de ASP.NET Core Identity llevan sus nombres por defecto y clave `Guid`; `RefreshTokens` es propia. Decisiones en el [ADR-005](adr/0005-identity-y-persistencia.md).
+
+```mermaid
+erDiagram
+    AspNetUsers ||--o{ AspNetUserRoles : "tiene"
+    AspNetRoles ||--o{ AspNetUserRoles : "asignado en"
+    AspNetUsers ||--o{ AspNetUserClaims : "tiene"
+    AspNetUsers ||--o{ AspNetUserLogins : "tiene"
+    AspNetUsers ||--o{ AspNetUserTokens : "tiene"
+    AspNetRoles ||--o{ AspNetRoleClaims : "tiene"
+    AspNetUsers ||--o{ RefreshTokens : "tiene"
+
+    AspNetUsers {
+        guid Id PK
+        string UserName
+        string Email
+        bool EmailConfirmed
+        string PasswordHash
+        datetimeoffset LockoutEnd
+        bool LockoutEnabled
+        int AccessFailedCount
+    }
+
+    AspNetRoles {
+        guid Id PK
+        string Name
+        string NormalizedName
+    }
+
+    AspNetUserRoles {
+        guid UserId PK
+        guid RoleId PK
+    }
+
+    RefreshTokens {
+        guid Id PK
+        guid UserId FK
+        char64 TokenHash UK
+        datetime2 CreatedAtUtc
+        datetime2 ExpiresAtUtc
+        datetime2 RevokedAtUtc
+    }
+```
+
+Notas:
+
+- `RefreshTokens.TokenHash` guarda solo el hash del token, nunca el valor en claro.
+- Al borrar un usuario se borran en cascada sus tokens y sus filas de roles, claims, logins y tokens de Identity.
+- `AspNetUsers` muestra solo las columnas relevantes; la tabla real tiene más (correo normalizado, teléfono, sello de seguridad y otras).
+- Los roles `Admin` y `Cajero` se crean al arrancar la API (`Identity:SeedOnStartup`).
 
 ## Reglas que se comprueban automáticamente
 

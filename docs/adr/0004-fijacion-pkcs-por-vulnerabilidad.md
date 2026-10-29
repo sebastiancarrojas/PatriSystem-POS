@@ -29,7 +29,7 @@ No se silencian `NU1902` ni `NU1903`.
 
 ### Cuándo revisarlo
 
-- Al empezar AUTH-01, cuando se agregue EF Core y se actualicen sus paquetes.
+- ~~Al empezar AUTH-01, cuando se agregue EF Core y se actualicen sus paquetes.~~ Hecho el 2026-10-28: ver "Revisión en AUTH-01".
 - Cada vez que se actualice `Microsoft.Data.SqlClient`: si la nueva versión ya trae un Pkcs corregido, se quita la fijación.
 
 ## Alternativas descartadas
@@ -37,3 +37,12 @@ No se silencian `NU1902` ni `NU1903`.
 - **Suprimir `NU1902` y `NU1903` con `NoWarn`:** esconde la vulnerabilidad en lugar de resolverla.
 - **Fijar 9.0.21, la versión corregida de la línea 9.x:** otros proyectos con el mismo problema la usaron. Se prefirió la 10.0.13 por coincidir con la línea de .NET 10 que usa el resto de paquetes.
 - **Esperar una versión nueva de SqlClient:** deja el build roto mientras tanto.
+
+
+## Revisión en AUTH-01
+
+Fecha: 2026-10-28. Se agregaron `Microsoft.EntityFrameworkCore.SqlServer`, `Microsoft.EntityFrameworkCore.Design` y `Microsoft.AspNetCore.Identity.EntityFrameworkCore` en la versión 10.0.13. Se probó quitar la fijación de Pkcs:
+
+- **Sin la fijación**, NuGet resuelve `System.Security.Cryptography.Pkcs` 9.0.18 en Api, Infrastructure y Api.IntegrationTests, con los avisos `NU1902` (GHSA-2fmv-rv2c-59x7) y `NU1903` (GHSA-846f-f764-76mx). La restauración y el build fallan.
+- **Con la fijación en 10.0.13**, `dotnet list package --vulnerable --include-transitive` no reporta paquetes vulnerables en ninguno de los 6 proyectos, y `dotnet nuget why` muestra que Pkcs llega por `Microsoft.Data.SqlClient` 7.1.1 (que `EntityFrameworkCore.SqlServer` 10.0.13 también usa).
+- **Conclusión:** la fijación sigue siendo necesaria. Se revisa de nuevo al actualizar `Microsoft.Data.SqlClient` o los paquetes de EF Core.

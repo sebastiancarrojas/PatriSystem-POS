@@ -22,7 +22,19 @@ El formato sigue [Keep a Changelog 1.1.0](https://keepachangelog.com/es-ES/1.1.0
 - Integración continua con GitHub Actions: formato, compilación en Release con advertencias como errores y pruebas con cobertura.
 - Documentación base: README, CONTRIBUTING, plantillas de PR y de issues, Definition of Done, diagrama de arquitectura y ADR 0001 a 0004.
 - Tablero del proyecto con backlog, milestones por sprint y etiquetas.
+- Identidad y persistencia (AUTH-01): ASP.NET Core Identity con EF Core sobre SQL Server y claves `Guid`. `ApplicationUser`, `ApplicationRole`, `RefreshToken` y `ApplicationDbContext` viven en Infrastructure; Domain y Application no cambian.
+- Migración `InitialIdentity`: tablas de Identity y `RefreshTokens`, que guarda solo el hash del token (`char(64)` con índice único), nunca el valor en claro.
+- Política de contraseña (mínimo 10 caracteres, mayúscula, minúscula y número) y de bloqueo (5 intentos fallidos, 15 minutos), con pruebas de integración.
+- Los roles `Admin` y `Cajero` se crean al arrancar la API, de forma idempotente. La opción `Identity:SeedOnStartup` permite apagarlo.
+- Herramienta local `dotnet-ef` (`dotnet-tools.json`) para las migraciones.
+- [ADR-005](docs/adr/0005-identity-y-persistencia.md) y diagrama del modelo de datos en `docs/architecture.md`.
+
+### Cambiado
+
+- La API necesita SQL Server con la migración aplicada para arrancar, porque crea los roles al iniciar.
+- La cadena de conexión local pasa de la base `master` a `PatriSystem`, y el README añade el paso de migraciones.
 
 ### Seguridad
 
 - Se fijó `System.Security.Cryptography.Pkcs` en 10.0.13 por avisos de vulnerabilidad en una dependencia indirecta de `Microsoft.Data.SqlClient` ([ADR-004](docs/adr/0004-fijacion-pkcs-por-vulnerabilidad.md)).
+- Se revisó la fijación de Pkcs al agregar EF Core: sigue siendo necesaria, porque sin ella NuGet resuelve la 9.0.18 con los avisos `NU1902` y `NU1903` ([ADR-004](docs/adr/0004-fijacion-pkcs-por-vulnerabilidad.md)).
