@@ -11,6 +11,7 @@ public sealed class ProjectReferenceTests
 
     private static readonly string[] AllowedApplicationPackages =
     [
+        "FluentValidation",
         "Microsoft.Extensions.DependencyInjection.Abstractions"
     ];
 
