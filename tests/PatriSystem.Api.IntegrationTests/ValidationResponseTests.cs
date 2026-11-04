@@ -22,6 +22,12 @@ public sealed class ValidationResponseTests(ApiFactory factory) : IClassFixture<
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
 
+        response.Content.Headers.ContentType.ShouldNotBeNull().MediaType
+            .ShouldBe("application/problem+json");
+
+        var body = await response.Content.ReadAsStringAsync();
+        body.ShouldContain("\"Email\"", Case.Sensitive);
+
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
         problem.ShouldNotBeNull();
 

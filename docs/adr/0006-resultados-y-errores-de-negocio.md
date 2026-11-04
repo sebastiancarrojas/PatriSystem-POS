@@ -28,12 +28,12 @@ AUTH-02 necesita una forma uniforme de representar los errores de negocio, para 
 
 - Cada caso de uso debe comprobar `IsSuccess`, y olvidarlo es posible. Leer `Value` de un fallo lanza en lugar de fallar al compilar.
 - Un error nuevo exige tocar tres sitios (el `record`, el mapper y su prueba).
-- Las claves de `errors` son los nombres de propiedad de C#. No se verificó si el JSON real las devuelve en camelCase; las pruebas comparan sin distinguir mayúsculas.
+- Las claves de `errors` son los nombres de propiedad de C# (`Email`, no `email`), y una prueba de integración lo comprueba. Si algún cliente necesita camelCase, se decide en un ticket aparte.
 - Hay un solo `Result<T>`. Una operación sin valor de retorno necesitaría un `Result` sin tipo, que no se añadió porque ningún caso lo pide todavía.
 
 ## Alternativas descartadas
 
 - **Excepciones de negocio con un filtro global:** más cómodas de escribir, pero ocultan los errores esperados y los mezclan con los bugs.
 - **Librerías como ErrorOr o FluentResults:** añaden una dependencia que Application tendría que permitir, para un tipo que son unas pocas líneas.
-- **`FluentValidation.AspNetCore`:** el autor lo descontinuó (no se verificó en este ticket) y acopla la validación a MVC.
+- **`FluentValidation.AspNetCore`:** la [documentación oficial](https://docs.fluentvalidation.net/en/latest/_sources/aspnet.md.txt) indica que el paquete ya no tiene soporte y que la validación automática no se recomienda en proyectos nuevos. Se valida de forma explícita en el caso de uso, que es el enfoque manual que la propia documentación describe.
 - **Mapear a HTTP dentro de Application:** rompe la regla de dependencias del ADR-001.
