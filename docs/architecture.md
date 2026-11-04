@@ -33,9 +33,9 @@ Las flechas punteadas son los proyectos de pruebas.
 | Capa | Hoy | Previsto |
 |---|---|---|
 | Domain | Nada | Entidades y reglas puras |
-| Application | `DependencyInjection` | Casos de uso, interfaces y validadores |
+| Application | `DependencyInjection`, `Result<T>` y errores tipados | Casos de uso, interfaces y validadores |
 | Infrastructure | `DatabaseOptions`, `DatabaseHealthCheck`, `ApplicationDbContext`, Identity (`ApplicationUser`, `ApplicationRole`), `RefreshToken` y siembra de roles | JWT y correo |
-| Api | Controlador de ejemplo (`ping`), middleware de correlación y de errores, documentación OpenAPI | Controladores de cada caso de uso |
+| Api | Controlador de ejemplo (`ping`), middleware de correlación y de errores, documentación OpenAPI, mapeo de errores a `ProblemDetails` | Controladores de cada caso de uso |
 
 ## Modelo de datos
 
