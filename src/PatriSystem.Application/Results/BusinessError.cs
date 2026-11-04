@@ -6,7 +6,7 @@ public sealed record ValidationError(
     string Code,
     string Description,
     IReadOnlyDictionary<string, string[]> Failures) : BusinessError(Code, Description);
-    
+
 public sealed record NotFoundError(string Code, string Description)
     : BusinessError(Code, Description);
 
