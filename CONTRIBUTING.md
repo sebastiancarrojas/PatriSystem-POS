@@ -47,10 +47,33 @@ Un PR que cambia comportamiento sin tocar la documentación no se fusiona. Eso i
 
 - **Pruebas:** nombre `Method_Scenario_ExpectedResult`. La regla CA1707 (sin guiones bajos) está desactivada solo en `tests/`.
 - **Logs:** se escriben con `LoggerMessage` (la regla CA1848 lo exige). Nunca se registran contraseñas, tokens ni datos personales.
-- **Errores:** fuera de Development, una respuesta de error no contiene detalles internos. El detalle va al log, con el `X-Correlation-Id` de la petición.
+- **Errores:** las reglas están en [Errores y resultados](#errores-y-resultados). Fuera de Development, una respuesta de error no contiene detalles internos: el detalle va al log, con el `X-Correlation-Id` de la petición.
 - **Secretos:** solo en user-secrets o variables de entorno. Nunca en archivos del repositorio.
 - **Paquetes:** las versiones viven en `Directory.Packages.props`, nunca en los `.csproj`. Una advertencia de vulnerabilidad de NuGet (`NU1902`, `NU1903`) no se silencia: se resuelve y se documenta, como en el [ADR-004](docs/adr/0004-fijacion-pkcs-por-vulnerabilidad.md).
 - **Analizadores:** una advertencia no se silencia sin explicar por qué. Las excepciones actuales son CS1591 solo en la API ([ADR-003](docs/adr/0003-documentacion-api-openapi-scalar.md)) y CA1707 solo en `tests/`.
+
+## Errores y resultados
+
+Hay dos tipos de fallo y cada uno sigue un camino distinto:
+
+- **Errores de negocio esperados** (datos inválidos, algo que no existe, un conflicto, falta de permiso). No son excepciones: los casos de uso devuelven `Result<T>` con un `BusinessError`.
+- **Excepciones inesperadas** (un bug, la base caída). Se dejan propagar. El `GlobalExceptionHandler` las registra y responde `500` genérico, sin `ex.Message` ni pila fuera de Development.
+
+| Error (Application) | HTTP | Cuándo se usa |
+|---|---|---|
+| `ValidationError` | 400, con los campos en `errors` | Los datos de entrada no cumplen las reglas |
+| `UnauthorizedError` | 401 | No hay identidad válida |
+| `NotFoundError` | 404 | El recurso pedido no existe |
+| `ConflictError` | 409 | La operación choca con el estado actual (por ejemplo, un duplicado) |
+
+Reglas:
+
+1. Application no conoce HTTP. El mapeo error → código vive en `Api/Errors/BusinessErrorMapper`, y los controladores lo usan con `result.Failure.ToActionResult()`.
+2. Cada error lleva un `Code` estable (`user.not_found`) para quien consuma la API, y un `Description` legible. El código se escribe en inglés y se mantiene aunque cambie el texto.
+3. La validación se escribe con FluentValidation en Application y se convierte con `ToValidationError()`.
+4. Un error nuevo exige tres cambios en el mismo PR: el `record` en `Application/Results`, su caso en `BusinessErrorMapper` y su prueba en `Api.UnitTests`. Si falta el caso, el mapper lanza `NotSupportedException` y la API responde 500.
+5. Leer `Value` de un `Result` fallido, o `Failure` de uno exitoso, lanza `InvalidOperationException`: es un error de programación. Se comprueba `IsSuccess` antes.
+6. Los endpoints que lanzan errores a propósito para las pruebas viven en `tests/PatriSystem.Api.IntegrationTests/TestSupport`, nunca en `src/`.
 
 ## Arquitectura
 

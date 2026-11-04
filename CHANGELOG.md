@@ -28,6 +28,11 @@ El formato sigue [Keep a Changelog 1.1.0](https://keepachangelog.com/es-ES/1.1.0
 - Los roles `Admin` y `Cajero` se crean al arrancar la API, de forma idempotente. La opción `Identity:SeedOnStartup` permite apagarlo.
 - Herramienta local `dotnet-ef` (`dotnet-tools.json`) para las migraciones.
 - [ADR-005](docs/adr/0005-identity-y-persistencia.md) y diagrama del modelo de datos en `docs/architecture.md`.
+- Resultados y errores de negocio (AUTH-02): `Result<T>` y los errores tipados `ValidationError`, `NotFoundError`, `ConflictError` y `UnauthorizedError` en Application, sin dependencia de HTTP.
+- Mapeo de errores de negocio a `ProblemDetails` en la API (400, 401, 404 y 409). Los errores de validación devuelven `ValidationProblemDetails` con los campos inválidos.
+- FluentValidation 12.2.0 en Application, con la extensión `ToValidationError()`.
+- Proyecto `PatriSystem.Api.UnitTests` y pruebas de integración que comprueban el 400 con campos inválidos y que una excepción inesperada devuelve un 500 genérico sin detalles internos.
+- [ADR-006](docs/adr/0006-resultados-y-errores-de-negocio.md) y sección *Errores y resultados* en CONTRIBUTING.
 
 ### Cambiado
 

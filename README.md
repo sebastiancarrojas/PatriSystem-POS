@@ -126,14 +126,15 @@ dotnet test PatriSystem.slnx
 
 | Proyecto | Tipo | Qué prueba |
 |---|---|---|
-| `PatriSystem.Application.Tests` | Unitarias y de arquitectura | Casos de uso y reglas, sin base de datos ni servidor web, y las reglas de dependencias entre capas |
+| `PatriSystem.Application.Tests` | Unitarias y de arquitectura | Casos de uso, `Result<T>` y reglas de dependencias entre capas, sin base de datos ni servidor web |
+| `PatriSystem.Api.UnitTests` | Unitarias | Mapeo de errores de negocio a `ProblemDetails`, sin servidor web |
 | `PatriSystem.Api.IntegrationTests` | Integración | La API completa en memoria, con `WebApplicationFactory` |
 
 Herramientas: xUnit, NSubstitute (dobles de prueba), Shouldly (aserciones) y NetArchTest (arquitectura). No se usa FluentAssertions por su cambio a licencia de pago.
 
 Los nombres de las pruebas siguen el patrón `Method_Scenario_ExpectedResult`. Las pruebas de integración usan el entorno `Testing`, un valor falso de `Database:ConnectionString` y desactivan la siembra de roles con `Identity:SeedOnStartup=false`, por lo que las pruebas actuales no necesitan Docker ni secretos locales.
 
-Las pruebas de arquitectura están en `tests/PatriSystem.Application.Tests/Architecture/` y hacen cumplir las reglas del [ADR-001](docs/adr/0001-clean-architecture.md): Domain no depende de nada, Application solo de Domain y de una lista explícita de paquetes, y ninguna de las dos usa EF Core, ASP.NET, Identity ni JWT. Si una capa necesita un paquete nuevo, se agrega a `AllowedApplicationPackages` en el mismo PR. Las reglas sobre tipos todavía no comprueban nada, porque Domain y Application casi no tienen código.
+Las pruebas de arquitectura están en `tests/PatriSystem.Application.Tests/Architecture/` y hacen cumplir las reglas del [ADR-001](docs/adr/0001-clean-architecture.md): Domain no depende de nada, Application solo de Domain y de una lista explícita de paquetes, y ninguna de las dos usa EF Core, ASP.NET, Identity ni JWT. Si una capa necesita un paquete nuevo, se agrega a `AllowedApplicationPackages` en el mismo PR. Las reglas sobre tipos comprueban todos los tipos de Domain y de Application.
 
 ## Integración continua
 
@@ -158,6 +159,7 @@ PatriSystem-POS/
 │   └── PatriSystem.Api/           Controladores, middleware y Program.cs
 ├── tests/
 │   ├── PatriSystem.Application.Tests/
+│   ├── PatriSystem.Api.UnitTests/
 │   └── PatriSystem.Api.IntegrationTests/
 ├── .env.example                   Plantilla de variables para Docker Compose
 ├── CHANGELOG.md
@@ -183,6 +185,8 @@ Las dependencias apuntan siempre hacia adentro. El diagrama de capas está en [`
 | [ADR-002](docs/adr/0002-dotnet-10.md) | Por qué .NET 10 |
 | [ADR-003](docs/adr/0003-documentacion-api-openapi-scalar.md) | OpenAPI nativo y Scalar |
 | [ADR-004](docs/adr/0004-fijacion-pkcs-por-vulnerabilidad.md) | Fijación de un paquete por vulnerabilidad |
+| [ADR-005](docs/adr/0005-identity-y-persistencia.md) | Identity con EF Core y persistencia |
+| [ADR-006](docs/adr/0006-resultados-y-errores-de-negocio.md) | `Result<T>` y errores tipados |
 | [Plantilla de ADR](docs/adr/0000-plantilla.md) | Formato para registrar decisiones |
 
 ## Licencia
